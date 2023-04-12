@@ -2,7 +2,6 @@
 from tflite_support.task import vision
 from tflite_support.task import core
 from tflite_support.task import processor
-import tensorflow as tf
 import time
 import argparse
 from trigger import Trigger
