@@ -1,6 +1,5 @@
 import numpy as np
 import argparse
-import tensorflow as tf
 import numpy as np
 from tflite_runtime.interpreter import Interpreter 
 from trigger import Trigger
