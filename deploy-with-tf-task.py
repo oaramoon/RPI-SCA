@@ -3,20 +3,43 @@ from tflite_support.task import vision
 from tflite_support.task import core
 from tflite_support.task import processor
 import tensorflow as tf
+import time
+import argparse
+from trigger import Trigger
 
-# Initialization
-base_options = core.BaseOptions(file_name="./efficientnet_lite1_int8_2.tflite")
-classification_options = processor.ClassificationOptions(max_results=2)
-options = vision.ImageClassifierOptions(base_options=base_options, classification_options=classification_options)
-classifier = vision.ImageClassifier.create_from_options(options)
 
-print(classifier)
+def main():
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', dest='model', action="store" , type=str)
 
-# Alternatively, you can create an image classifier in the following manner:
-# classifier = vision.ImageClassifier.create_from_file(model_path)
+    args = parser.parse_args()
 
-# Run inference
-image = vision.TensorImage.create_from_file("cat.jpeg")
-classification_result = classifier.classify(image)
+    #### Instantiate the trigger
+    trigger = Trigger()
 
-print(classification_result)
+    model_path = args.model
+    print("Model Path : ", model_path)
+    
+    # Initialization
+    base_options = core.BaseOptions(file_name=model_path)
+    classification_options = processor.ClassificationOptions(max_results=2)
+    options = vision.ImageClassifierOptions(base_options=base_options, classification_options=classification_options)
+    classifier = vision.ImageClassifier.create_from_options(options)
+
+    image = vision.TensorImage.create_from_file("cat.jpeg")
+    
+    while True:
+        d = float(input("delay between queires?\n>"))
+        while True:
+            trigger.set()
+            start = time.time()
+            preds = classifier.classify(image)
+            end = time.time()
+            print("inference time: ", end-start , "predictions: ", preds)
+            trigger.clear()
+            time.sleep(d)
+
+
+if __name__ == '__main__':
+    main()
