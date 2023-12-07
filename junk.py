@@ -88,71 +88,65 @@ def main():
 
 
     data_transfer_time = 16
-    max_trigger_calls = 7
-    delay_between_queries = 0.85
+    max_trigger_calls = 3
+    delay_between_queries = 0.75
     cut = 30000
+    repeat = 20
     # Loop through samples
 
     num_samples = 0
 
     for idx, (sample, target) in enumerate(list(combined_loader)[:cut]):
-        
         if not target.item() in [1,8]:
             continue
-
         input_sample = sample.to(device)      
-        
-        trigger_calls = 1
-        while True:
-            trigger.set()
-            output = model.forward(input_sample)
-            
-            if trigger_calls == max_trigger_calls:
-                print("\nCollecting...")
-                confidence, predicted_class = torch.exp(output).max(dim=1)
-                collection_name = 'cifar10-class-'+str(target.item())+'-predicted-as-'+str(predicted_class.item())+\
-                "-with-confidence-"+"{:.2f}".format(100*confidence.item())+"-"+str(idx)
-                time.sleep(1.0)
-                scope.save_waveform_D(name=collection_name, wait_time=data_transfer_time)
-                time.sleep(1)
+        for r in range(repeat):
+            trigger_calls = 1
+            while True:
+                trigger.set()
+                output = model.forward(input_sample)
+                
+                if trigger_calls == max_trigger_calls:
+                    print("\nCollecting...")
+                    _, predicted_class = torch.exp(output).max(dim=1)
+                    collection_name = f'alexnet-cifar10-class-{target.item()}-predicted-as-{predicted_class.item()}-{idx}-{r}
+                    time.sleep(1.0)
+                    scope.save_waveform_D(name=collection_name, wait_time=data_transfer_time)
+                    time.sleep(1)
+                    scope.single()
+                    time.sleep(delay_between_queries)
+                    break
+
                 scope.single()
                 time.sleep(delay_between_queries)
-                break
-
-            scope.single()
-            time.sleep(delay_between_queries)
-            trigger_calls += 1
+                trigger_calls += 1
 
 
     # Loop through samples
     for idx, (sample, target) in enumerate(list(combined_loader)[cut:],start=cut):
-
         if not target.item() in [1,8]:
             continue
-
-        
         input_sample = sample.to(device)      
-        
-        trigger_calls = 1
-        while True:
-            trigger.set()
-            output = model.forward(input_sample)
-            
-            if trigger_calls == max_trigger_calls:
-                print("\nCollecting...")
-                confidence, predicted_class = torch.exp(output).max(dim=1)
-                collection_name = 'cifar10-class-'+str(target.item())+'-predicted-as-'+str(predicted_class.item())+\
-                "-with-confidence-"+"{:.2f}".format(100*confidence.item())+"-"+str(idx)
-                time.sleep(1.0)
-                scope.save_waveform_E(name=collection_name, wait_time=data_transfer_time)
-                time.sleep(1)
+        for r in range(repeat):
+            trigger_calls = 1
+            while True:
+                trigger.set()
+                output = model.forward(input_sample)
+                
+                if trigger_calls == max_trigger_calls:
+                    print("\nCollecting...")
+                    _, predicted_class = torch.exp(output).max(dim=1)
+                    collection_name = f'alexnet-cifar10-class-{target.item()}-predicted-as-{predicted_class.item()}-{idx}-{r}
+                    time.sleep(1.0)
+                    scope.save_waveform_E(name=collection_name, wait_time=data_transfer_time)
+                    time.sleep(1)
+                    scope.single()
+                    time.sleep(delay_between_queries)
+                    break
+
                 scope.single()
                 time.sleep(delay_between_queries)
-                break
-
-            scope.single()
-            time.sleep(delay_between_queries)
-            trigger_calls += 1
+                trigger_calls += 1
         
         
 
@@ -161,4 +155,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
